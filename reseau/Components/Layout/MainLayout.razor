@@ -1,0 +1,35 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <main>
+        <nav class="top-nav">
+            <NavLink href="" Match="NavLinkMatch.All">Send (Outbox)</NavLink>
+            <NavLink href="received">Received (Inbox)</NavLink>
+        </nav>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<style>
+    .top-nav {
+        display: flex;
+        background-color: #f5f5f5;
+        border-bottom: 1px solid #ddd;
+        padding: 0 1rem;
+    }
+
+    .top-nav a {
+        padding: 1rem 1.5rem;
+        text-decoration: none;
+        color: #333;
+        border-bottom: 2px solid transparent;
+    }
+
+    .top-nav a.active {
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+    }
+</style>

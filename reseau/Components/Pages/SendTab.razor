@@ -1,0 +1,199 @@
+﻿@page "/"
+@inject reseau.Services.FileTransferService NetService
+@using Microsoft.AspNetCore.Components.Forms
+@using System.IO
+
+<h3>Send Files (Outbox)</h3>
+
+<div class="card p-3 mb-3" style="background-color: #f8f9fa; border: 1px solid #ddd;">
+    <h5>1. Configure Server</h5>
+
+    <div class="mb-2">
+        <label>My Device IP:</label>
+
+        <div class="input-group">
+            <input type="text"
+                   class="form-control"
+                   list="ip-options"
+                   @bind="localIp"
+                   disabled="@isServerRunning"
+                   placeholder="Select or type your IP..." />
+
+            <datalist id="ip-options">
+                @if (availableIps != null)
+                {
+                    @foreach (var ip in availableIps)
+                    {
+                        <option value="@ip"></option>
+                    }
+                }
+            </datalist>
+        </div>
+        <small class="text-muted">
+            @(isServerRunning ? "Server is running on this IP." : "Select the IP that matches your Wi-Fi settings.")
+        </small>
+    </div>
+
+    <button class="btn @(isServerRunning ? "btn-danger" : "btn-success") w-100" @onclick="ToggleServer">
+        @(isServerRunning ? "Stop Server" : "Start Server")
+    </button>
+
+    @if (isServerRunning)
+    {
+        <div class="mt-2 text-center text-success">
+            <strong>● Online</strong> at http://@localIp:8080
+        </div>
+    }
+</div>
+
+<hr />
+
+<h3>2. Send File</h3>
+
+<div class="mb-3">
+    <InputFile OnChange="LoadFile" class="form-control" />
+    @if (selectedFile != null)
+    {
+        <p class="mt-2">Selected: <strong>@selectedFile.Name</strong> (@(selectedFile.Size / 1024) KB)</p>
+    }
+</div>
+
+@if (selectedFile != null)
+{
+    <div class="send-control card p-3" style="background-color: #e9ecef;">
+        <label>Target IP (Receiver):</label>
+        <input @bind="targetIp" placeholder="e.g. 192.168.1.5" class="form-control mb-2" />
+
+        <button class="btn btn-primary w-100" @onclick="SendFile" disabled="@isSending">
+            @(isSending ? "Sending..." : "Send File")
+        </button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(sendStatus))
+{
+    <div class="alert alert-info mt-3">@sendStatus</div>
+}
+
+@code {
+    private string localIp;
+    private bool isServerRunning = false;
+    private string targetIp;
+    private string sendStatus;
+    private bool isSending = false;
+
+    private IBrowserFile selectedFile;
+    private string tempFilePath;
+    private List<string> availableIps;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            NetService.EnsureDirectoryExists();
+
+            // Get detected IPs
+            availableIps = NetService.GetAllPossibleIPs();
+
+            // Try to guess the best one initially
+            localIp = NetService.GetLocalIPAddress();
+
+            isServerRunning = NetService.IsServerRunning;
+        }
+        catch (Exception ex)
+        {
+            sendStatus = $"Startup Error: {ex.Message}";
+        }
+    }
+
+    private async Task ToggleServer()
+    {
+        if (string.IsNullOrWhiteSpace(localIp))
+        {
+            sendStatus = "Please select or type a valid IP first.";
+            return;
+        }
+
+        sendStatus = "Processing...";
+        StateHasChanged();
+
+        try
+        {
+            if (isServerRunning)
+            {
+                NetService.StopServer();
+                isServerRunning = false;
+                sendStatus = "Server stopped.";
+            }
+            else
+            {
+                await NetService.StartServerAsync();
+                isServerRunning = NetService.IsServerRunning;
+
+                if (isServerRunning)
+                    sendStatus = $"Server started on {localIp}";
+                else
+                    sendStatus = "Failed to start server.";
+            }
+        }
+        catch (Exception ex)
+        {
+            sendStatus = $"Server Error: {ex.Message}";
+            isServerRunning = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        sendStatus = "";
+
+        if (selectedFile == null)
+        {
+            tempFilePath = null;
+            return;
+        }
+
+        try
+        {
+            tempFilePath = Path.Combine(FileSystem.CacheDirectory, selectedFile.Name);
+            long maxFileSize = 1024 * 1024 * 500; // 500MB limit
+
+            using var stream = selectedFile.OpenReadStream(maxFileSize);
+            using var fs = File.Create(tempFilePath);
+            await stream.CopyToAsync(fs);
+        }
+        catch (Exception ex)
+        {
+            sendStatus = $"Error loading file: {ex.Message}";
+            selectedFile = null;
+            tempFilePath = null;
+        }
+    }
+
+    private async Task SendFile()
+    {
+        if (selectedFile == null || string.IsNullOrEmpty(tempFilePath) || string.IsNullOrEmpty(targetIp))
+        {
+            sendStatus = "Please select a file and enter a target IP.";
+            return;
+        }
+
+        isSending = true;
+        sendStatus = "Sending...";
+        StateHasChanged();
+
+        sendStatus = await NetService.SendFileAsync(targetIp, tempFilePath);
+
+        isSending = false;
+
+        if (File.Exists(tempFilePath))
+        {
+            try { File.Delete(tempFilePath); } catch { }
+        }
+        selectedFile = null;
+        tempFilePath = null;
+    }
+}

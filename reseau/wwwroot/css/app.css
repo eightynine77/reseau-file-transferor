@@ -1,0 +1,218 @@
+﻿/* Add this to your existing app.css */
+
+.file-manager {
+    font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    background: #f4f4f4;
+}
+
+/* --- Hides the error UI by default --- */
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none; /* <--- This is the critical line! */
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.tabs {
+    display: flex;
+    background: #333;
+}
+
+    .tabs button {
+        padding: 12px 18px;
+        background: #555;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 1em;
+        border-bottom: 3px solid transparent;
+    }
+
+        .tabs button.active {
+            background: #f4f4f4;
+            color: #333;
+            border-bottom: 3px solid #0078d4;
+        }
+
+.tab-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.local-view, .remote-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+    .header button, .toolbar button {
+        padding: 8px 12px;
+        background: #0078d4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+        .header button:disabled {
+            background: #aaa;
+        }
+
+.path-bar {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.server-select {
+    flex-grow: 1;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.status-bar {
+    padding: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    color: #333;
+    min-height: 1.5em;
+}
+
+.file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+    .file-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eee;
+        user-select: none;
+    }
+
+        .file-list li:hover {
+            background: #f0f8ff;
+        }
+
+.item-icon {
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.item-actions {
+    display: flex;
+    gap: 5px;
+}
+
+    .item-actions button {
+        padding: 4px 8px;
+        font-size: 0.8em;
+        background: #eee;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+        .item-actions button:hover {
+            background: #ddd;
+        }
+
+/* Modal for text editor */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80vw;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+    .modal-content h3 {
+        margin-top: 0;
+    }
+
+    .modal-content textarea {
+        flex-grow: 1;
+        width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1em;
+    }
+
+.modal-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+    .modal-actions button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+        .modal-actions button:first-child {
+            background: #0078d4;
+            color: white;
+        }

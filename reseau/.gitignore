@@ -1,0 +1,22 @@
+# Build outputs
+bin/
+obj/
+
+# Visual Studio & user files
+.vs/
+*.suo
+*.user
+*.userosscache
+
+# Rider/IDE
+.idea/
+
+# Publish / NuGet
+*.nupkg
+*.publishsettings
+
+# sensitive things / local env
+.env
+appsettings.*.json
+*.pfx
+*.pem

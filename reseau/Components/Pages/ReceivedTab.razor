@@ -1,0 +1,72 @@
+@page "/received"
+@inject Services.FileTransferService NetService
+@implements IDisposable
+
+<h3>Received Files (Inbox)</h3>
+<button class="btn btn-secondary" @onclick="RefreshFiles">Refresh List</button>
+
+@if (receivedFiles.Any())
+{
+        <ul class="file-list">
+        @foreach (var file in receivedFiles)
+        {
+                    <li>@file</li>
+        }
+        </ul>
+}
+else
+{
+        <p>No files received yet. Start the server on the 'Send' tab.</p>
+}
+
+
+@code {
+    private List<string> receivedFiles = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        // Subscribe to the event from the service
+        NetService.OnFileReceived += HandleFileReceived;
+        RefreshFiles();
+    }
+
+    private void RefreshFiles()
+    {
+        try
+        {
+            var directory = NetService.ReceivedFilesPath;
+            if (Directory.Exists(directory))
+            {
+                receivedFiles = Directory.GetFiles(directory)
+                                         .Select(Path.GetFileName)
+                                         .ToList();
+            }
+            else
+            {
+                receivedFiles.Clear();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading files: {ex.Message}");
+        }
+    }
+
+    // This method is called by the event from the service
+    private async void HandleFileReceived()
+    {
+        // We are on a background thread, so we must invoke StateHasChanged
+        // on the UI thread.
+        await InvokeAsync(() =>
+        {
+            RefreshFiles();
+            StateHasChanged();
+        });
+    }
+
+    // Unsubscribe from the event when the page is closed
+    public void Dispose()
+    {
+        NetService.OnFileReceived -= HandleFileReceived;
+    }
+}
