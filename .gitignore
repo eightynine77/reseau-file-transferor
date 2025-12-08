@@ -1,0 +1,19 @@
+# Build folders
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+
+# Rider/IDE
+.idea/
+
+# Secrets / environment
+.env
+appsettings.*.json   # (if you store secrets per environment, be careful)
+
+# git folder
+.git/
