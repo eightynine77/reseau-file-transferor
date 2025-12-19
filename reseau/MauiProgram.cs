@@ -23,9 +23,13 @@ namespace reseau
 #endif
 
             builder.Services.AddSingleton<FileTransferService>();
-
-            // Register HttpClient as a Singleton
             builder.Services.AddSingleton<HttpClient>();
+
+#if WINDOWS
+    builder.Services.AddSingleton<IFolderPicker, reseau.Services.FolderPickerImplementation>();
+#elif ANDROID
+            builder.Services.AddSingleton<IFolderPicker, reseau.Services.FolderPickerImplementation>();
+#endif
 
             return builder.Build();
         }

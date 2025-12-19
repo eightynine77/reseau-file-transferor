@@ -12,17 +12,23 @@ public class FileTransferService : IAsyncDisposable
     private readonly HttpClient _httpClient;
     private bool _isServerRunning = false;
     private CancellationTokenSource _serverCts;
+    private readonly IFolderPicker _folderPicker;
 
     public event Action OnFileReceived;
 
-    // Use a property for the path
-    public string ReceivedFilesPath => Path.Combine(FileSystem.AppDataDirectory, "ReceivedFiles");
+    public string CustomSavePath { get; set; }
 
-    public FileTransferService(HttpClient httpClient)
+    // Use a property for the path
+    public string ReceivedFilesPath => !string.IsNullOrEmpty(CustomSavePath) 
+        ? CustomSavePath 
+        : Path.Combine(FileSystem.AppDataDirectory, "ReceivedFiles");
+
+    public FileTransferService(HttpClient httpClient, IFolderPicker folderPicker)
     {
         _httpClient = httpClient;
         _listener = new HttpListener();
         _listener.Prefixes.Add("http://*:8080/");
+        _folderPicker = folderPicker;
     }
 
     public bool IsServerRunning => _isServerRunning;
@@ -35,7 +41,20 @@ public class FileTransferService : IAsyncDisposable
         }
     }
 
-    // --- NEW SMART IP LOGIC ---
+    public async Task<string> PickSaveLocationAsync()
+    {
+        string path = await _folderPicker.PickFolderAsync();
+        if (!string.IsNullOrEmpty(path))
+        {
+            CustomSavePath = path;
+            // Ensure permissions or directory existence if possible
+            if (!Directory.Exists(CustomSavePath))
+            {
+                try { Directory.CreateDirectory(CustomSavePath); } catch { }
+            }
+        }
+        return CustomSavePath;
+    }
 
     public string GetLocalIPAddress()
     {

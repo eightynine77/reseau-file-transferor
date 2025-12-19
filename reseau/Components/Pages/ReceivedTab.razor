@@ -2,32 +2,65 @@
 @inject Services.FileTransferService NetService
 @implements IDisposable
 
-<h3>Received Files (Inbox)</h3>
-<button class="btn btn-secondary" @onclick="RefreshFiles">Refresh List</button>
+<h3 class="mb-3">Inbox</h3>
+
+<div class="card p-3 mb-3" style="background-color: #f0f0f0;">
+    <label class="fw-bold">Save Location:</label>
+    <div class="text-break mb-2 text-muted">
+        @currentSavePath
+    </div>
+    <button class="btn btn-outline-primary btn-sm" @onclick="ChangeFolder">
+         Change Folder
+    </button>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span>Received Files:</span>
+    <button class="btn btn-sm btn-secondary" @onclick="RefreshFiles">Refresh</button>
+</div>
 
 @if (receivedFiles.Any())
 {
-        <ul class="file-list">
+    <div class="list-group">
         @foreach (var file in receivedFiles)
         {
-                    <li>@file</li>
+            <div class="list-group-item">
+                <span class="fw-bold">@file.Name</span>
+                <br />
+                <small class="text-muted">@file.SizeString</small>
+            </div>
         }
-        </ul>
+    </div>
 }
 else
 {
-        <p>No files received yet. Start the server on the 'Send' tab.</p>
+    <div class="alert alert-light text-center border">
+        <p class="mb-0">No files received yet.</p>
+    </div>
 }
 
 
 @code {
+    private string currentSavePath;
     private List<string> receivedFiles = new List<string>();
 
     protected override void OnInitialized()
     {
-        // Subscribe to the event from the service
+        currentSavePath = NetService.ReceivedFilesPath;
         NetService.OnFileReceived += HandleFileReceived;
         RefreshFiles();
+    }
+
+    private async Task ChangeFolder()
+    {
+        // Call the service to pick a folder
+        string newPath = await NetService.PickSaveLocationAsync();
+
+        if (!string.IsNullOrEmpty(newPath))
+        {
+            currentSavePath = newPath;
+            RefreshFiles(); // Reload list from new folder
+        }
     }
 
     private void RefreshFiles()
