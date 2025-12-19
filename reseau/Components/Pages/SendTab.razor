@@ -13,11 +13,11 @@
 
         <div class="input-group">
             <input type="text"
-                   class="form-control"
-                   list="ip-options"
-                   @bind="localIp"
-                   disabled="@isServerRunning"
-                   placeholder="Select or type your IP..." />
+            class="form-control"
+            list="ip-options"
+            @bind="localIp"
+            disabled="@isServerRunning"
+            placeholder="Select or type your IP..." />
 
             <datalist id="ip-options">
                 @if (availableIps != null)
